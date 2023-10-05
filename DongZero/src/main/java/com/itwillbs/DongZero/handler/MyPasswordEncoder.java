@@ -8,7 +8,7 @@ import com.itwillbs.DongZero.vo.*;
 // 비밀번호 암호화 & 매칭 작업
 public class MyPasswordEncoder {
 
-		// 1. 어노테이션으로 BCryptPasswordEncoder객체 생성
+		// 1. 어노테이션으로 BCryptPasswordEncoder객체 생성 - org.springframework.security.crypto.bcrypt;
 		@Autowired
 		private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 		private MemberVO member;
@@ -21,11 +21,10 @@ public class MyPasswordEncoder {
 //			System.out.println("평문 : " + member.getMember_pass());
 //			System.out.println("암호문 : " + securePassword ); // 매번 동일한 함호라도 결과가 다르다
 			
-		// 3. 암호문 리턴
+			// 3. 암호문 리턴
 			return securePassword;
 		}
 
-		
 		// 두 문자열 비교를 수행할 isSameCryptoPassword() 메서드 정의
 		// => 파라미터 : 평문(String rawPassword), 암호문(String EncryptedPasword)
 		public boolean isSameCryptoPassword(String rawPassword, String EncryptedPassword) {

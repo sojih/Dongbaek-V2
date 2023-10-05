@@ -45,6 +45,7 @@ public class MemberController {
 		MyPasswordEncoder passwordEncoder = new MyPasswordEncoder();
 		
 		// 2. getCtyptoPassword() 메서드에 평문 전달하며 암호문 얻어오기
+		// 파라미터 : String(로그인 비밀번호)		리턴타입 : String(암호화된 비밀번호)
 		String securePasswd = passwordEncoder.getCryptoPasswd(member.getMember_pass());
 		
 		// 3. 리턴받은 암호문을 MemberVO 객체에 덮어쓰기
