@@ -89,13 +89,11 @@ public class MemberController {
 		return "member_join_step4";
 	}
 	
-	
-	
-	// 메인화면에서 회원 로그인 화면으로 이동
+	// 회원 로그인 화면으로 이동
 	@RequestMapping(value="member_login_form", method = {RequestMethod.GET, RequestMethod.POST })
 	public String member_login_form(Model model, HttpSession session,
 						@RequestParam(required = false) String play_num) {
-		// 세션 아이디가 있을 경우" 접근 막기
+		// 세션 아이디가 있을 경우 접근 막기
 		String member_id = (String) session.getAttribute("member_id");
 		if(member_id != null) {
 			model.addAttribute("msg", " 잘못된 접근!");
@@ -103,15 +101,14 @@ public class MemberController {
 			return "fail_back";
 		}
 		
+		// 로그인 창으로 넘어가기 전 받은 파라미터 "회차"가 있으면 로그인 작업 후 다음 페이지로 넘어 갈 수 있게 세션에 저장
 		if(play_num != null) {
 			session.setAttribute("play_num", play_num);
 //			System.out.println("url하고 play_num : " + url + play_num );
 		}
 		
-		
 		return "member/member_login_form";
 	}
-
 	
 	// 로그인 폼에서 로그인 버튼, 네이버/카카오 로그인 버튼 클릭 시 처리
 	@PostMapping("member_login_pro")
@@ -119,7 +116,7 @@ public class MemberController {
 				MemberVO member, boolean remember_me,
 				HttpSession session, HttpServletResponse response, Model model) {
 		
-		// 1. 일반 로그인 시도
+		// 1. 일반 로그인
 		// MemberService - getPasswd()
 		// member 테이블에서 id가 일치하는 레코드의 패스워드(passwd) 조회
 		// 파라미터 : MemberVO member	리턴타입 : MemberVO getMember
@@ -132,26 +129,29 @@ public class MemberController {
 		// member 테이블에서 id 가 일치하는 레코드 패스워드 조회 요청
 		// => 파라미터 : memberVO 객체		리턴타입 : String securePasswd
 		String securePasswd = service.getPasswd(member);
-			System.out.println(securePasswd);
-			System.out.println(member.getMember_pass());
+//			System.out.println(securePasswd);
+//			System.out.println(member.getMember_pass());
 		
+		// -------------------------
 		// 2. BcryptPasswordEncoder 객체 생성
-		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+//		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 		
 		// 3. BcryptPasswordEncoder 객체의 matches() 메서드 호출해서 암호 비교
 		// => 파라미터 : 평문, 암호화 된 암호 		리턴타입 : boolean
 		// 로그인 성공/ 실패 여부 판별하여 포워딩
 		// => 성공 : MemberVO 객체에 데이터가 저장되어 있고 입력받은 패스워드가 같음
 		// => 실패 : MemberVO 객체가 null 이거나 입력받은 패스워드와 다름
+		// --------------
+		//  ===================== Version2 업데이트 ===========================
+		// 2-1. MyPasswordEncoder 클래스의 isSameCryptoPassword 메서드 사용(BCryptPasswordEncoder 객체를 다루는 클래스)
+		MyPasswordEncoder passwordEncoder = new MyPasswordEncoder();
 		
-		System.out.println("securePasswd : " + securePasswd);
-
 		if(member.getMember_id() == null) {		
 			// 아이디로 조회 시 없는 아이디일 때
 			model.addAttribute("msg", "없는 아이디 입니다. "
 					+ "입력하신 내용을 다시 확인해주세요.");
 			return "fail_back";
-		} else if (member.getMember_pass() ==  null || !passwordEncoder.matches(member.getMember_pass(), securePasswd)) {
+		} else if (member.getMember_pass() ==  null || !passwordEncoder.isSameCryptoPassword(member.getMember_pass(), securePasswd)) {
 			// 패스워드가 member.getPasswd와 다를 때(비밀번호가 틀림)
 			model.addAttribute("msg", "아이디 또는 비밀번호를 잘못 입력했습니다. "
 					+ "입력하신 내용을 다시 확인해주세요.");
@@ -185,7 +185,6 @@ public class MemberController {
 			response.addCookie(cookie);
 			
 //			System.out.println("play_num 없어? " + session.getAttribute("play_num"));
-			
 			// 나중에 작업하던 곳으로 돌아가게 설정하기(예매-좌석)
 			if(session.getAttribute("play_num") != null) {
 				return "redirect:/reservation_seat?play_num=" + session.getAttribute("play_num");
